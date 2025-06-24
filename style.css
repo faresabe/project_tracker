@@ -1,0 +1,25 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f7f7f7;
+    color: #111;
+  }
+  header .logo {
+    font-weight: bold;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    background: #ffffff;
+    
+  }
+  .nav {
+    display: flex;
+    gap: 20px;
+  }
