@@ -71,11 +71,14 @@
   }
   
   /* Forgot password */
-  .forgot {
+ 
+  .forgot-link {
     display: block;
     margin-top: 10px;
-    font-size: 12px;
+    font-size: 14px;
     color: #333;
+    text-align: right;
     text-decoration: underline;
+    font-family: 'Inter', sans-serif;
   }
   
