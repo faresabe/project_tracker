@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Projects Dashboard</title>
+    <link rel="stylesheet" href="board.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <span class="sidebar-title">Projects</span>
+            </div>
+            <nav>
+                <ul>
+                    <li class="active"><span class="icon">📁</span> Project</li>
+                    <li><span class="icon">💬</span> Add Project</li>
+                </ul>
+            </nav>
+            <button class="logout-btn">Log Out</button>
+        </aside>
+        <main class="main-content">
+            <header class="dashboard-header">
+                <input type="text" class="search-bar" placeholder="Search...">
+                <div class="user-info">
+                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User" class="user-avatar">
+                    <div>
+                        <div class="user-name">Jane Doe</div>
+                        <div class="user-role">User</div>
+                    </div>
+                </div>
+            </header>
+            <section class="project-status">
+                <h2>PROJECT STATUS</h2>
+                <div class="status-cards">
+                    <div class="status-card completed">
+                        <div class="status-value">12%</div>
+                        <div class="status-label">Completed</div>
+                    </div>
+                    <div class="status-card pending">
+                        <div class="status-value">12%</div>
+                        <div class="status-label">Pending</div>
+                    </div>
+                    <div class="status-card ongoing">
+                        <div class="status-value">54%</div>
+                        <div class="status-label">Ongoing</div>
+                    </div>
+                </div>
+            </section>
+            <section class="projects-list">
+                <div class="projects-header">
+                    <h3>Projects</h3>
+                    <a href="#" class="view-all">View all</a>
+                </div>
+                <div class="projects-grid">
+                    <div class="project-row">
+                        <img src="../Assets/Portfolio-dashboard-compressed.png" class="project-img" alt="Web Dev">
+                        <div>
+                            <div class="project-title">Web Development</div>
+                            <a href="#" class="see-more">See more</a>
+                        </div>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/4/4f/Sound-icon.svg" class="project-img" alt="Boolean">
+                        <div>
+                            <div class="project-title">Boolean Project</div>
+                            <a href="#" class="see-more">See more</a>
+                        </div>
+                    </div>
+                    <div class="project-row">
+                        <img src="../Assets/Portfolio-dashboard-compressed.png" class="project-img" alt="Calculus">
+                        <div>
+                            <div class="project-title">Calculus Project</div>
+                            <a href="#" class="see-more">See more</a>
+                        </div>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/4/4f/Sound-icon.svg" class="project-img" alt="DSA">
+                        <div>
+                            <div class="project-title">DSA Project</div>
+                            <a href="#" class="see-more">See more</a>
+                        </div>
+                    </div>
+                    <div class="project-row">
+                        <img src="../Assets/Portfolio-dashboard-compressed.png" class="project-img" alt="Database">
+                        <div>
+                            <div class="project-title">Database Project</div>
+                            <a href="#" class="see-more">See more</a>
+                        </div>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/4/4f/Sound-icon.svg" class="project-img" alt="Web App">
+                        <div>
+                            <div class="project-title">Web Application Project</div>
+                            <a href="#" class="see-more">See more</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
