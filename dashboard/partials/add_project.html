@@ -1,37 +1,55 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Add Project</title>
-  <link rel="stylesheet" href="add_project.css">
-  <link rel="stylesheet" href="../style.css">
-</head>
-<body>
-  <div class="add-project-container">
-    <h2>Add New Project</h2>
-    <form class="add-project-form">
-      <label>
-        Project Name
-        <input type="text" name="projectName" required>
-      </label>
-      <label>
-        Description
-        <textarea name="description" rows="3" required></textarea>
-      </label>
-      <label>
-        Status
-        <select name="status" required>
-          <option value="ongoing">Ongoing</option>
-          <option value="pending">Pending</option>
-          <option value="completed">Completed</option>
-        </select>
-      </label>
-      <label>
-        Upload Image
-        <input type="file" name="image">
-      </label>
-      <button type="submit">Add Project</button>
-    </form>
-  </div>
-</body>
-</html>
+
+<section class="form-section">
+  <h2>Add New Project</h2>
+  
+  <form id="add-project-form">
+    <div class="form-group">
+      <label for="project-title">Project Title</label>
+      <input type="text" id="project-title" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="project-type">Project Type</label>
+      <select id="project-type">
+        <option value="web">Web Development</option>
+        <option value="mobile">Mobile App</option>
+        <option value="design">UI/UX Design</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label for="project-description">Description</label>
+      <textarea id="project-description" rows="4"></textarea>
+    </div>
+    
+    <div class="form-group">
+      <label>Tasks</label>
+      <div class="tasks-box">
+        <div class="task-item">
+          <input type="checkbox">
+          <input type="text" placeholder="Task description">
+        </div>
+        <a class="add-task">+ Add Task</a>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label>Timeline</label>
+      <div class="date-box">
+        <div>
+          <label for="start-date">Start Date</label>
+          <input type="date" id="start-date">
+          <span class="calendar-icon"></span>
+        </div>
+        <div>
+          <label for="end-date">End Date</label>
+          <input type="date" id="end-date">
+          <span class="calendar-icon"></span>
+        </div>
+      </div>
+    </div>
+    
+    <a class="create-project">Create Project</a>
+  </form>
+</section>
