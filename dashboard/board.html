@@ -50,60 +50,60 @@
       </div>
     </main>
   </div>
-  <div id="task-form-popup">
-    <div class="task-form-container">
-      <div class="task-form-header">
-        <h3>Add New Task</h3>
-        <button class="close-task-form">&times;</button>
-      </div>
-      <form id="add-task-form">
-        <div class="form-group">
-          <label for="task-name">Name</label>
-          <input type="text" id="task-name" placeholder="Enter task name" required />
-        </div>
-        <div class="form-group">
-          <label for="task-type">Type</label>
-          <select id="task-type" required>
-            <option value="">Select type</option>
-            <option value="feature">Feature</option>
-            <option value="bug">Bug</option>
-            <option value="improvement">Improvement</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="task-desc">Description</label>
-          <textarea id="task-desc" rows="3" placeholder="Enter task description"></textarea>
-        </div>
-        <div class="form-group">
-          <label>Date</label>
-          <div class="date-box">
-            <div>
-              <label for="start-date">Start Date</label>
-              <input type="date" id="start-date" required />
-            </div>
-            <div>
-              <label for="end-date">End Date</label>
-              <input type="date" id="end-date" required />
-            </div>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Priority</label>
-          <div class="priority-options">
-            <div class="priority-option selected" data-priority="high">High</div>
-            <div class="priority-option" data-priority="medium">Medium</div>
-            <div class="priority-option" data-priority="low">Low</div>
-          </div>
-          <div id="priority-chip-container" style="display: none;">
-            <div id="priority-chip">
-              High <span id="remove-priority">&times;</span>
-            </div>
-          </div>
-        </div>
-        <button type="submit" class="create-task-btn">Create Task</button>
-      </form>
+<div id="task-form-popup">
+  <div class="task-form-container">
+    <div class="task-form-header">
+      <h3>Add New Task</h3>
+      <button class="close-task-form">&times;</button>
     </div>
+    <form id="add-task-form">
+      <div class="form-group">
+        <label for="task-name">Name</label>
+        <input type="text" id="task-name" placeholder="Enter task name" required />
+      </div>
+      <div class="form-group">
+        <label for="task-type">Type</label>
+        <select id="task-type" required>
+          <option value="">Select type</option>
+          <option value="feature">Feature</option>
+          <option value="bug">Bug</option>
+          <option value="improvement">Improvement</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="task-desc">Description</label>
+        <textarea id="task-desc" rows="3" placeholder="Enter task description"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <div class="date-box">
+          <div>
+            <label for="start-date">Start Date</label>
+            <input type="date" id="start-date" required />
+          </div>
+          <div>
+            <label for="end-date">End Date</label>
+            <input type="date" id="end-date" required />
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Priority</label>
+        <div class="priority-options">
+          <div class="priority-option selected" data-priority="high">High</div>
+          <div class="priority-option" data-priority="medium">Medium</div>
+          <div class="priority-option" data-priority="low">Low</div>
+        </div>
+        <div id="priority-chip-container" style="display: none;">
+          <div id="priority-chip">
+            High <span id="remove-priority">&times;</span>
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="create-task-btn">Create Task</button>
+    </form>
   </div>
+</div>
   <script src="board.js"></script>
 </body>
 </html>

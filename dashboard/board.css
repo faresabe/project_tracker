@@ -632,6 +632,123 @@ form {
 .priority-option.selected {
   border-color: currentColor;
 }
+
+
+/* Project Status Styles */
+.project-status {
+  font-size: 0.9rem;
+  color: var(--text-medium);
+  margin: 4px 0;
+}
+
+.project-card[data-status="pending"] {
+  border-left: 4px solid var(--warning-color);
+}
+
+.project-card[data-status="ongoing"] {
+  border-left: 4px solid var(--danger-color);
+}
+
+.project-card[data-status="completed"] {
+  border-left: 4px solid var(--success-color);
+}
+
+/* Status Section Updates */
+.status-section {
+  transition: var(--transition);
+}
+
+.status-card {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.status-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Task List Styles */
+.tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.task-item {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.task-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.task-info h4 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.task-type {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  background: #e9ecef;
+}
+
+.task-type.feature {
+  background: #e6f9f0;
+  color: #3bb77e;
+}
+
+.task-type.bug {
+  background: #ffeaea;
+  color: #e74c3c;
+}
+
+.task-type.improvement {
+  background: #e6f0fa;
+  color: #1976d2;
+}
+
+.task-priority {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+
+.task-priority.high {
+  background: #ffeaea;
+  color: #e74c3c;
+}
+
+.task-priority.medium {
+  background: #fff7e6;
+  color: #f7b731;
+}
+
+.task-priority.low {
+  background: #e6f9f0;
+  color: #3bb77e;
+}
+
+.task-dates {
+  display: flex;
+  gap: 15px;
+  font-size: 0.85rem;
+  color: var(--text-medium);
+}
+
+.task-description {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+}
 /* Responsive Design */
 @media (max-width: 992px) {
   .sidebar {
