@@ -23,13 +23,13 @@
           <li data-page="add_project.html" id="nav-add">
             <span class="icon">➕</span> <span class="menu-text">Add Project</span>
           </li>
-          <li data-page="settings.html" id="nav-settings">
+          <li data-page="setting.html" id="nav-settings">
             <span class="icon">⚙️</span> <span class="menu-text">Settings</span>
           </li>
         </ul>
       </nav>
       <button class="logout-btn">
-        <span class="icon">🚪</span> <span class="menu-text">Log Out</span>
+        <span class="icon"></span> <span class="menu-text">Log Out</span>
       </button>
     </aside>
 
@@ -50,6 +50,7 @@
       </div>
     </main>
   </div>
+  
 <div id="task-form-popup">
   <div class="task-form-container">
     <div class="task-form-header">
@@ -87,23 +88,11 @@
           </div>
         </div>
       </div>
-      <div class="form-group">
-        <label>Priority</label>
-        <div class="priority-options">
-          <div class="priority-option selected" data-priority="high">High</div>
-          <div class="priority-option" data-priority="medium">Medium</div>
-          <div class="priority-option" data-priority="low">Low</div>
-        </div>
-        <div id="priority-chip-container" style="display: none;">
-          <div id="priority-chip">
-            High <span id="remove-priority">&times;</span>
-          </div>
-        </div>
-      </div>
+     
       <button type="submit" class="create-task-btn">Create Task</button>
     </form>
   </div>
 </div>
-  <script src="board.js"></script>
+  <script src="boards.js"></script>
 </body>
 </html>

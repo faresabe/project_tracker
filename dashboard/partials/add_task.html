@@ -20,24 +20,17 @@
     <label>Date</label>
     <div class="date-box">
       <div>
-        <label for="start-date">Start Date</label>
-        <input type="text" id="start-date" placeholder="DD/MM/YYYY" />
+        <label for="task-start-date">Start Date</label>
+        <input type="date" id="task-start-date" required />
         <span class="calendar-icon"></span>
       </div>
       <div>
-        <label for="end-date">End Date</label>
-        <input type="text" id="end-date" placeholder="DD/MM/YYYY" />
+        <label for="task-end-date">End Date</label>
+        <input type="date" id="task-end-date" required />
         <span class="calendar-icon"></span>
       </div>
     </div>
   </div>
-  <div class="form-group" style="align-items:flex-start;">
-    <label>Priority</label>
-    <div style="display:flex;align-items:center;gap:1rem;">
-      <div id="priority-chip">
-        High <span id="remove-priority">&#10006;</span>
-      </div>
-    </div>
-  </div>
+ 
   <button type="submit" class="create-task-btn">Create</button>
 </form>
