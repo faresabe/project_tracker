@@ -34,10 +34,9 @@ try {
     if ($success) {
         $projectId = $conn->lastInsertId();
 
-        // ✅ If there are tasks, save them too
         if (!empty($data['tasks']) && is_array($data['tasks'])) {
-            $taskStmt = $conn->prepare("INSERT INTO tasks (project_id, name, type, description, start_date, end_date, priority)
-                                        VALUES (:project_id, :name, :type, :description, :start_date, :end_date, :priority)");
+            $taskStmt = $conn->prepare("INSERT INTO tasks (project_id, name, type, description, start_date, end_date)
+                            VALUES (:project_id, :name, :type, :description, :start_date, :end_date)");
 
             foreach ($data['tasks'] as $task) {
                 $taskStmt->execute([
@@ -47,7 +46,7 @@ try {
                     ':description' => $task['description'] ?? '',
                     ':start_date' => $task['start_date'] ?? null,
                     ':end_date' => $task['end_date'] ?? null,
-                    ':priority' => $task['priority'] ?? 'medium'
+                    
                 ]);
             }
         }
