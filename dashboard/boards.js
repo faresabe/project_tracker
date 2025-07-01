@@ -1,8 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
   const navLinks = document.querySelectorAll(".sidebar nav ul li");
-  const tasks = []; // Store tasks temporarily
+  let tasks = [];
 
-  // Sidebar nav click handler
   navLinks.forEach(link => {
     link.addEventListener("click", function (e) {
       e.preventDefault();
@@ -19,15 +18,13 @@ document.addEventListener("DOMContentLoaded", function () {
           } else if (page === 'home.html') {
             loadProjects();
           }
-        })
-        .catch(err => console.error("Error loading page:", err));
+        });
 
       navLinks.forEach(item => item.classList.remove("active"));
       this.classList.add("active");
     });
   });
 
-  // Load home page on start
   fetch("partials/home.html")
     .then(response => response.text())
     .then(html => {
@@ -35,15 +32,36 @@ document.addEventListener("DOMContentLoaded", function () {
       loadProjects();
     });
 
-  // Main logic to setup Add Project form
-  function setupAddProjectForm() {
+  function setupAddProjectForm(project = null) {
     const addProjectForm = document.getElementById('add-project-form');
     if (!addProjectForm) return;
 
-    addProjectForm.addEventListener('submit', function (e) {
+    const submitBtn = addProjectForm.querySelector('button[type="submit"]');
+
+    tasks = [];
+    document.getElementById('tasks-container').innerHTML = '';
+
+    if (project) {
+      document.getElementById('project-title').value = project.title;
+      document.getElementById('project-type').value = project.type;
+      document.getElementById('project-description').value = project.description;
+      document.getElementById('start-date').value = project.start_date;
+      document.getElementById('end-date').value = project.end_date;
+
+      submitBtn.textContent = 'Update Project';
+
+      if (project.tasks && project.tasks.length > 0) {
+        project.tasks.forEach(task => addTaskToList(task));
+      }
+    } else {
+      submitBtn.textContent = 'Create Project';
+    }
+
+    addProjectForm.onsubmit = function (e) {
       e.preventDefault();
 
       const projectData = {
+        id: project ? project.id : null,
         title: document.getElementById('project-title').value,
         type: document.getElementById('project-type').value,
         description: document.getElementById('project-description').value,
@@ -53,7 +71,9 @@ document.addEventListener("DOMContentLoaded", function () {
         tasks: tasks
       };
 
-      fetch('php_api/save_project.php', {
+      const apiURL = project ? 'php_api/update_project.php' : 'php_api/save_project.php';
+
+      fetch(apiURL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(projectData)
@@ -61,37 +81,32 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(response => response.json())
         .then(data => {
           if (data.success) {
-            alert('Project saved successfully!');
-            tasks.length = 0;
+            alert(project ? 'Project updated!' : 'Project created!');
             addProjectForm.reset();
-            document.getElementById('tasks-container').innerHTML = '';
             document.getElementById('nav-home').click();
+          } else {
+            alert(data.error || 'Something went wrong.');
           }
-        })
-        .catch(err => console.error('Error:', err));
-    });
+        });
+    };
 
-    // Show Add Task popup
     const addTaskBtn = document.querySelector('.add-task');
     if (addTaskBtn) {
-      addTaskBtn.addEventListener('click', function (e) {
-        e.preventDefault();
+      addTaskBtn.onclick = () => {
         document.getElementById('task-form-popup').style.display = 'flex';
-      });
+      };
     }
 
-    // Close popup
     const closeTaskBtn = document.querySelector('.close-task-form');
     if (closeTaskBtn) {
-      closeTaskBtn.addEventListener('click', function () {
+      closeTaskBtn.onclick = () => {
         document.getElementById('task-form-popup').style.display = 'none';
-      });
+      };
     }
 
-    // Add Task form logic
     const addTaskForm = document.getElementById('add-task-form');
     if (addTaskForm) {
-      addTaskForm.addEventListener('submit', function (e) {
+      addTaskForm.onsubmit = function (e) {
         e.preventDefault();
 
         const task = {
@@ -102,45 +117,46 @@ document.addEventListener("DOMContentLoaded", function () {
           end_date: document.getElementById('task-end-date').value
         };
 
-        tasks.push(task);
-
-        const taskEl = document.createElement('div');
-        taskEl.classList.add('task-item');
-        taskEl.innerHTML = `
-          ${task.name}
-          <button class="edit-task">Edit</button>
-          <button class="delete-task">Delete</button>
-        `;
-
-        // Delete Task
-        taskEl.querySelector('.delete-task').addEventListener('click', function () {
-          const index = tasks.indexOf(task);
-          if (index > -1) tasks.splice(index, 1);
-          taskEl.remove();
-        });
-
-        // Edit Task
-        taskEl.querySelector('.edit-task').addEventListener('click', function () {
-          document.getElementById('task-name').value = task.name;
-          document.getElementById('task-type').value = task.type;
-          document.getElementById('task-desc').value = task.description;
-
-          const index = tasks.indexOf(task);
-          if (index > -1) tasks.splice(index, 1);
-          taskEl.remove();
-
-          document.getElementById('task-form-popup').style.display = 'flex';
-        });
-
-        document.getElementById('tasks-container').appendChild(taskEl);
+        addTaskToList(task);
 
         this.reset();
         document.getElementById('task-form-popup').style.display = 'none';
-      });
+      };
     }
   }
 
-  // Load project cards on Home
+  function addTaskToList(task) {
+    tasks.push(task);
+
+    const taskEl = document.createElement('div');
+    taskEl.classList.add('task-item');
+    taskEl.innerHTML = `
+      ${task.name}
+      <button class="edit-task">Edit</button>
+      <button class="delete-task">Delete</button>
+    `;
+
+    taskEl.querySelector('.delete-task').onclick = function () {
+      tasks = tasks.filter(t => t !== task);
+      taskEl.remove();
+    };
+
+    taskEl.querySelector('.edit-task').onclick = function () {
+      document.getElementById('task-name').value = task.name;
+      document.getElementById('task-type').value = task.type;
+      document.getElementById('task-desc').value = task.description;
+      document.getElementById('task-start-date').value = task.start_date;
+      document.getElementById('task-end-date').value = task.end_date;
+
+      tasks = tasks.filter(t => t !== task);
+      taskEl.remove();
+
+      document.getElementById('task-form-popup').style.display = 'flex';
+    };
+
+    document.getElementById('tasks-container').appendChild(taskEl);
+  }
+
   function loadProjects() {
     fetch('php_api/get_projects.php')
       .then(response => response.json())
@@ -149,40 +165,64 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!container) return;
 
         container.innerHTML = '';
-
         projects.forEach(project => {
           const card = createProjectCard(project);
           container.appendChild(card);
         });
-      })
-      .catch(err => console.error('Error loading projects:', err));
+      });
   }
 
-  // Build simple project card
   function createProjectCard(project) {
     const card = document.createElement('div');
     card.className = 'project-card';
-    
+
     card.innerHTML = `
       <h4>${project.title}</h4>
       <p>From: ${project.start_date} To: ${project.end_date}</p>
-      <button class="see-more-btn">See More</button>`;
+      <button class="see-more-btn">See More</button>
+      <button class="edit-project-btn">Edit</button>
+      <button class="delete-project-btn">Delete</button>
+    `;
 
-    // Handle See More: fetch project details dynamically
-    const seeMoreBtn = card.querySelector('.see-more-btn');
-    seeMoreBtn.addEventListener('click', function () {
+    card.querySelector('.see-more-btn').onclick = () => {
       fetch(`php_api/get_project_details.php?id=${project.id}`)
-        .then(response => response.json())
+        .then(res => res.json())
+        .then(fullProject => renderProjectDetails(fullProject));
+    };
+
+    card.querySelector('.edit-project-btn').onclick = () => {
+      fetch(`php_api/get_project_details.php?id=${project.id}`)
+        .then(res => res.json())
         .then(fullProject => {
-          renderProjectDetails(fullProject);
+          fetch('partials/add_project.html')
+            .then(r => r.text())
+            .then(html => {
+              document.getElementById("page-content").innerHTML = html;
+              setupAddProjectForm(fullProject);
+            });
+        });
+    };
+
+    card.querySelector('.delete-project-btn').onclick = () => {
+      if (confirm(`Delete project "${project.title}"?`)) {
+        fetch(`php_api/delete_project.php?id=${project.id}`, {
+          method: 'GET'
         })
-        .catch(err => console.error('Error loading project details:', err));
-    });
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              alert('Project deleted.');
+              card.remove();
+            } else {
+              alert('Error deleting.');
+            }
+          });
+      }
+    };
 
     return card;
   }
 
-  // Render full project details with tasks dynamically
   function renderProjectDetails(project) {
     const container = document.getElementById('page-content');
     container.innerHTML = `
@@ -213,7 +253,7 @@ document.addEventListener("DOMContentLoaded", function () {
         tasksContainer.appendChild(taskCard);
       });
     } else {
-      tasksContainer.innerHTML = '<p>No tasks found for this project.</p>';
+      tasksContainer.innerHTML = '<p>No tasks for this project.</p>';
     }
   }
 
