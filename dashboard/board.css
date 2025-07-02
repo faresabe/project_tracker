@@ -593,45 +593,6 @@ form {
   background: #1565c0;
 }
 
-/* Priority Selector Styles */
-.priority-options {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-.priority-option {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: var(--transition);
-  border: 1px solid transparent;
-}
-
-.priority-option:hover {
-  opacity: 0.9;
-}
-
-.priority-option[data-priority="high"] {
-  background: #ffeaea;
-  color: #e74c3c;
-}
-
-.priority-option[data-priority="medium"] {
-  background: #fff7e6;
-  color: #f7b731;
-}
-
-.priority-option[data-priority="low"] {
-  background: #e6f9f0;
-  color: #3bb77e;
-}
-
-.priority-option.selected {
-  border-color: currentColor;
-}
 
 
 /* Project Status Styles */
@@ -749,6 +710,96 @@ form {
   font-size: 0.9rem;
   color: var(--text-dark);
 }
+
+
+.task-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  width: 300px;        
+  flex: 0 0 auto;       
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.task-cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  padding: 1rem;
+}
+.task-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.task-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.task-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.task-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.edit-icon {
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.task-complete {
+  width: 20px;
+  height: 20px;
+}
+
+.delete-btn {
+  background: #f8d7da;
+  border: none;
+  color: #a33;
+  border-radius: 6px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.delete-btn:hover {
+  background: #f44336;
+  color: #fff;
+}
+
+.task-desc {
+  font-size: 1rem;
+  color: #444;
+}
+
+.task-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.due-icon {
+  font-size: 1.1rem;
+}
+
+.due-date {
+  font-weight: 500;
+}
+
 /* Responsive Design */
 @media (max-width: 992px) {
   .sidebar {

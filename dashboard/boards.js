@@ -225,31 +225,71 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function renderProjectDetails(project) {
     const container = document.getElementById('page-content');
-    container.innerHTML = `
-      <div class="project-title">${project.title}</div>
-      <div class="tasks-container"></div>
-    `;
 
-    const tasksContainer = container.querySelector('.tasks-container');
+    container.innerHTML = `<div class="task-cards-container"></div>`;
+
+    const tasksContainer = container.querySelector('.task-cards-container');
 
     if (project.tasks && project.tasks.length > 0) {
       project.tasks.forEach(task => {
         const taskCard = document.createElement('div');
         taskCard.className = 'task-card';
+
         taskCard.innerHTML = `
-          <div class="task-header">
-            ${task.name}
-            <span class="edit-icon">&#9998;</span>
-            <div class="status">
-              <input type="checkbox" ${task.done ? 'checked' : ''}>
+          <div class="task-card-header">
+            <div>
+              <span class="task-title">${task.name}</span>
+              <span class="edit-icon">&#9998;</span>
+            </div>
+            <div>
+              <button class="delete-btn">Delete</button>
             </div>
           </div>
           <div class="task-desc">${task.description}</div>
-          <div class="task-footer">
-            <span style="font-size:1.2em;">&#9200;</span>
-            <span class="date">${task.start_date} to ${task.end_date}</span>
-          </div>
         `;
+
+        taskCard.querySelector('.edit-icon').onclick = () => {
+          // Open add_project.html to edit this task
+          fetch('partials/add_project.html')
+            .then(r => r.text())
+            .then(html => {
+              container.innerHTML = html;
+              setupAddProjectForm(project);
+
+              // Fill task form with this task data
+              document.getElementById('task-name').value = task.name;
+              document.getElementById('task-type').value = task.type;
+              document.getElementById('task-desc').value = task.description;
+              document.getElementById('task-start-date').value = task.start_date;
+              document.getElementById('task-end-date').value = task.end_date;
+
+              // Remove task from project so new save won't duplicate
+              tasks = project.tasks.filter(t => t !== task);
+              document.getElementById('task-form-popup').style.display = 'flex';
+            });
+        };
+
+        taskCard.querySelector('.delete-btn').onclick = () => {
+          if (confirm('Delete this task?')) {
+            project.tasks = project.tasks.filter(t => t !== task);
+
+            fetch('php_api/update_project.php', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(project)
+            })
+            .then(res => res.json())
+            .then(data => {
+              if (data.success) {
+                alert('Task deleted.');
+                taskCard.remove();
+              } else {
+                alert('Error deleting task.');
+              }
+            });
+          }
+        };
+
         tasksContainer.appendChild(taskCard);
       });
     } else {
