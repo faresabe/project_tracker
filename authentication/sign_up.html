@@ -2,34 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sign Up</title>
-  <link rel="stylesheet" href="sign_up.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-
 </head>
 <body>
-
-  <div class="login-container">
-    <h2>SIGN UP</h2>
-    <div class="login-box">
-      <form>
-        <label for="first-name">First Name</label>
-        <input type="text" id="first-name" placeholder="John" required />
-
-        <label for="last-name">Last Name</label>
-        <input type="text" id="last-name" placeholder="Doe" required />
-
-        <label for="email">Email</label>
-        <input type="email" id="email" placeholder="you@example.com" required />
-
-        <label for="password">Password</label>
-        <input type="password" id="password" placeholder="Enter password" required />
-
-        <button type="submit">Sign Up</button>
-      </form>
-    </div>
-  </div>
-
+  <h2>Sign Up</h2>
+  <form id="sign-up-form">
+    <input type="text" id="first-name" placeholder="First Name" required />
+    <input type="text" id="last-name" placeholder="Last Name" required />
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <button type="submit">Sign Up</button>
+  </form>
+  <script src="auth.js"></script>
 </body>
 </html>
