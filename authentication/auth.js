@@ -29,7 +29,7 @@ if (document.querySelector('#sign-up-form')) {
     });
   }
   
-  // Handle sign in
+  // Handles sign in
   if (document.querySelector('#sign-in-form')) {
     document.querySelector('#sign-in-form').addEventListener('submit', e => {
       e.preventDefault();
