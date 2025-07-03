@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
       this.classList.add("active");
     });
   });
-
+  
   fetch("partials/home.html")
     .then(response => response.text())
     .then(html => {
@@ -115,6 +115,7 @@ document.addEventListener("DOMContentLoaded", function () {
           description: document.getElementById('task-desc').value,
           start_date: document.getElementById('task-start-date').value,
           end_date: document.getElementById('task-end-date').value
+          
         };
 
         addTaskToList(task);
@@ -298,5 +299,15 @@ document.addEventListener("DOMContentLoaded", function () {
       tasksContainer.innerHTML = '<p>No tasks for this project.</p>';
     }
   }
-
+  document.getElementById('logout-btn').addEventListener('click', function(e) {
+    e.preventDefault();
+    fetch('../auth_php/logout.php')
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          window.location.href = '../index.html';  // <-- YOUR ROOT INDEX!
+        }
+      });
+  });
+  
 });
