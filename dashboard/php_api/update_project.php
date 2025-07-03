@@ -19,26 +19,28 @@ try {
   $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
   // Update the project
-  $stmt = $conn->prepare("
-    UPDATE projects 
-    SET title = :title, type = :type, description = :description, start_date = :start_date, end_date = :end_date 
-    WHERE id = :id
-  ");
+  $taskStmt = $conn->prepare("
+  INSERT INTO tasks (project_id, name, type, description, start_date, end_date, status)
+  VALUES (:project_id, :name, :type, :description, :start_date, :end_date, :status)
+");
 
-  $stmt->execute([
-    ':id' => $data['id'],
-    ':title' => $data['title'],
-    ':type' => $data['type'],
-    ':description' => $data['description'],
-    ':start_date' => $data['start_date'],
-    ':end_date' => $data['end_date']
+
+$taskStmt->execute([
+    ':project_id' => $data['id'],
+    ':name' => $task['name'] ?? '',
+    ':type' => $task['type'] ?? '',
+    ':description' => $task['description'] ?? '',
+    ':start_date' => $task['start_date'] ?? null,
+    ':end_date' => $task['end_date'] ?? null,
+    ':status' => $task['status'] ?? 'pending' 
   ]);
+  
 
-  // ✅ Delete old tasks for this project
+ 
   $deleteStmt = $conn->prepare("DELETE FROM tasks WHERE project_id = :project_id");
   $deleteStmt->execute([':project_id' => $data['id']]);
 
-  // ✅ Insert updated tasks if provided
+  
   if (!empty($data['tasks']) && is_array($data['tasks'])) {
     $taskStmt = $conn->prepare("
       INSERT INTO tasks (project_id, name, type, description, start_date, end_date) 

@@ -255,20 +255,22 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(html => {
               container.innerHTML = html;
               setupAddProjectForm(project);
-
+        
               // Fill task form with this task data
               document.getElementById('task-name').value = task.name;
               document.getElementById('task-type').value = task.type;
               document.getElementById('task-desc').value = task.description;
               document.getElementById('task-start-date').value = task.start_date;
               document.getElementById('task-end-date').value = task.end_date;
-
+              const statusField = document.getElementById('task-status');
+              if (statusField) {
+                statusField.value = task.status || 'pending';
+              }
               // Remove task from project so new save won't duplicate
               tasks = project.tasks.filter(t => t !== task);
               document.getElementById('task-form-popup').style.display = 'flex';
             });
         };
-
         taskCard.querySelector('.delete-btn').onclick = () => {
           if (confirm('Delete this task?')) {
             project.tasks = project.tasks.filter(t => t !== task);

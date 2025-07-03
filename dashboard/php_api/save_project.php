@@ -19,9 +19,10 @@ try {
     $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Insert the project
+   
     $stmt = $conn->prepare("INSERT INTO projects (title, type, description, start_date, end_date, status)
                             VALUES (:title, :type, :description, :start_date, :end_date, :status)");
+
     $success = $stmt->execute([
         ':title' => $data['title'],
         ':type' => $data['type'] ?? 'web',
@@ -34,9 +35,10 @@ try {
     if ($success) {
         $projectId = $conn->lastInsertId();
 
+       
         if (!empty($data['tasks']) && is_array($data['tasks'])) {
-            $taskStmt = $conn->prepare("INSERT INTO tasks (project_id, name, type, description, start_date, end_date)
-                            VALUES (:project_id, :name, :type, :description, :start_date, :end_date)");
+            $taskStmt = $conn->prepare("INSERT INTO tasks (project_id, name, type, description, start_date, end_date, status)
+                                        VALUES (:project_id, :name, :type, :description, :start_date, :end_date, :status)");
 
             foreach ($data['tasks'] as $task) {
                 $taskStmt->execute([
@@ -46,7 +48,7 @@ try {
                     ':description' => $task['description'] ?? '',
                     ':start_date' => $task['start_date'] ?? null,
                     ':end_date' => $task['end_date'] ?? null,
-                    
+                    ':status' => $task['status'] ?? 'pending'
                 ]);
             }
         }
@@ -56,7 +58,6 @@ try {
         echo json_encode(['success' => false, 'error' => 'Failed to save project']);
     }
 
-} catch(PDOException $e) {
+} catch (PDOException $e) {
     echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
 }
-?>
