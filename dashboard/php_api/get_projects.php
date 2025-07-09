@@ -1,21 +1,47 @@
 <?php
-header('Content-Type: application/json');
+require_once '../../authentication/config.php';
 
-
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "project_manager";
+require_auth();
+$user_id = get_current_user_id();
 
 try {
-    $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    
-    $stmt = $conn->query("SELECT * FROM projects ORDER BY created_at DESC");
+    // Get projects for the current user only
+    $stmt = $pdo->prepare("SELECT * FROM projects WHERE user_id = ? ORDER BY created_at DESC");
+    $stmt->execute([$user_id]);
     $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    echo json_encode($projects);
+    // Calculate status percentages
+    $total = count($projects);
+    $completed = 0;
+    $pending = 0;
+    $ongoing = 0;
+    
+    foreach ($projects as $project) {
+        switch ($project['status']) {
+            case 'completed':
+                $completed++;
+                break;
+            case 'pending':
+                $pending++;
+                break;
+            case 'ongoing':
+                $ongoing++;
+                break;
+        }
+    }
+    
+    $response = [
+        'projects' => $projects,
+        'stats' => [
+            'total' => $total,
+            'completed' => $total > 0 ? round(($completed / $total) * 100) : 0,
+            'pending' => $total > 0 ? round(($pending / $total) * 100) : 0,
+            'ongoing' => $total > 0 ? round(($ongoing / $total) * 100) : 0
+        ]
+    ];
+    
+    json_response($response);
 } catch(PDOException $e) {
-    echo json_encode(['error' => $e->getMessage()]);
+    json_response(['error' => $e->getMessage()], 500);
 }
 ?>

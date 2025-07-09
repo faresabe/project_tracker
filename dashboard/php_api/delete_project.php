@@ -1,22 +1,26 @@
 <?php
-header("Content-Type: application/json");
+require_once '../../authentication/config.php';
 
-if (isset($_GET['id'])) {
-    $id = intval($_GET['id']);
+require_auth();
+$user_id = get_current_user_id();
 
-    
-    $pdo = new PDO('mysql:host=localhost;dbname=project_manager', 'root', '');
+if (!isset($_GET['id'])) {
+    json_response(['error' => 'Project ID required'], 400);
+}
 
-   
-    $stmt = $pdo->prepare("DELETE FROM projects WHERE id = ?");
-    $deleted = $stmt->execute([$id]);
+$id = intval($_GET['id']);
 
-    if ($deleted) {
-        echo json_encode(["success" => true]);
+try {
+    // Verify project belongs to current user and delete
+    $stmt = $pdo->prepare("DELETE FROM projects WHERE id = ? AND user_id = ?");
+    $deleted = $stmt->execute([$id, $user_id]);
+
+    if ($stmt->rowCount() > 0) {
+        json_response(['success' => true]);
     } else {
-        echo json_encode(["success" => false]);
+        json_response(['error' => 'Project not found or access denied'], 404);
     }
-} else {
-    echo json_encode(["success" => false, "error" => "No ID."]);
+} catch (PDOException $e) {
+    json_response(['error' => $e->getMessage()], 500);
 }
 ?>
