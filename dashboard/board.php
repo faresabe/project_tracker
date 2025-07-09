@@ -12,7 +12,17 @@ $user_id = get_current_user_id();
 $stmt = $pdo->prepare("SELECT first_name, last_name FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
-$user_name = $user['first_name'] . ' ' . $user['last_name'];
+
+// Check if user data was found
+if ($user) {
+    $user_name = $user['first_name'] . ' ' . $user['last_name'];
+} else {
+    // Fallback if user not found
+    $user_name = 'Unknown User';
+    // Optionally redirect to login
+    // header('Location: ../authentication/sign_in.php');
+    // exit;
+}
 
 // Get current page
 $page = $_GET['page'] ?? 'home';
