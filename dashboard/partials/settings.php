@@ -1,100 +1,8 @@
-<?php
-$error = '';
-$success = '';
-
-// Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_settings'])) {
-    $name = sanitizeInput($_POST['name'] ?? '');
-    $email = sanitizeInput($_POST['email'] ?? '');
-    $currentPassword = $_POST['current_password'] ?? '';
-    $newPassword = $_POST['new_password'] ?? '';
-    $theme = $_POST['theme'] ?? 'light';
-    $emailNotifications = isset($_POST['email_notifications']) ? 1 : 0;
-    
-    if (empty($name) || empty($email)) {
-        $error = 'Name and email are required';
-    } elseif (!validateEmail($email)) {
-        $error = 'Please enter a valid email address';
-    } else {
-        // Check if email is already taken by another user
-        $query = "SELECT id FROM users WHERE email = ? AND id != ?";
-        $stmt = $db->prepare($query);
-        $stmt->execute([$email, $user['id']]);
-        
-        if ($stmt->fetch()) {
-            $error = 'Email address is already taken';
-        } else {
-            // If password change is requested
-            if (!empty($currentPassword) || !empty($newPassword)) {
-                if (empty($currentPassword) || empty($newPassword)) {
-                    $error = 'Both current and new password are required to change password';
-                } elseif (strlen($newPassword) < 6) {
-                    $error = 'New password must be at least 6 characters long';
-                } else {
-                    // Verify current password
-                    $query = "SELECT password FROM users WHERE id = ?";
-                    $stmt = $db->prepare($query);
-                    $stmt->execute([$user['id']]);
-                    $userData = $stmt->fetch();
-                    
-                    if (!verifyPassword($currentPassword, $userData['password'])) {
-                        $error = 'Current password is incorrect';
-                    } else {
-                        // Update with new password
-                        $hashedPassword = hashPassword($newPassword);
-                        $query = "UPDATE users SET name = ?, email = ?, password = ?, theme = ?, email_notifications = ? WHERE id = ?";
-                        $stmt = $db->prepare($query);
-                        
-                        if ($stmt->execute([$name, $email, $hashedPassword, $theme, $emailNotifications, $user['id']])) {
-                            $success = 'Settings updated successfully!';
-                            // Update session
-                            $_SESSION['user_name'] = $name;
-                            $_SESSION['user_email'] = $email;
-                            // Refresh user data
-                            $user = getCurrentUser();
-                        } else {
-                            $error = 'Failed to update settings';
-                        }
-                    }
-                }
-            } else {
-                // Update without password change
-                $query = "UPDATE users SET name = ?, email = ?, theme = ?, email_notifications = ? WHERE id = ?";
-                $stmt = $db->prepare($query);
-                
-                if ($stmt->execute([$name, $email, $theme, $emailNotifications, $user['id']])) {
-                    $success = 'Settings updated successfully!';
-                    // Update session
-                    $_SESSION['user_name'] = $name;
-                    $_SESSION['user_email'] = $email;
-                    // Refresh user data
-                    $user = getCurrentUser();
-                } else {
-                    $error = 'Failed to update settings';
-                }
-            }
-        }
-    }
-}
-?>
-
 <div style="padding: 20px;">
     <div style="max-width: 600px; margin: 0 auto;">
         <h2 style="margin-bottom: 20px;">Account Settings</h2>
         
-        <?php if ($error): ?>
-            <div style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
-                <?php echo $error; ?>
-            </div>
-        <?php endif; ?>
-        
-        <?php if ($success): ?>
-            <div style="background: #d4edda; color: #155724; padding: 12px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
-                <?php echo $success; ?>
-            </div>
-        <?php endif; ?>
-        
-        <form method="POST" class="settings-form">
+        <form method="POST" class="settings-form ajax-form" data-ajax="true">
             <div class="settings-section">
                 <h3>Profile Information</h3>
                 
@@ -102,12 +10,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_settings'])) {
                     <label for="userName">Full Name *</label>
                     <input type="text" id="userName" name="name" class="form-control" required 
                            value="<?php echo htmlspecialchars($user['name']); ?>">
+                    <div class="field-error-container"></div>
                 </div>
                 
                 <div class="form-group">
                     <label for="userEmail">Email Address *</label>
                     <input type="email" id="userEmail" name="email" class="form-control" required 
                            value="<?php echo htmlspecialchars($user['email']); ?>">
+                    <div class="field-error-container"></div>
                 </div>
             </div>
             
@@ -120,12 +30,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_settings'])) {
                 <div class="form-group">
                     <label for="currentPassword">Current Password</label>
                     <input type="password" id="currentPassword" name="current_password" class="form-control">
+                    <div class="field-error-container"></div>
                 </div>
                 
                 <div class="form-group">
                     <label for="newPassword">New Password</label>
                     <input type="password" id="newPassword" name="new_password" class="form-control" minlength="6">
                     <small style="color: #666;">Minimum 6 characters</small>
+                    <div class="field-error-container"></div>
                 </div>
             </div>
             
@@ -141,15 +53,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_settings'])) {
                 </div>
                 
                 <div class="form-group">
-                    <label>
+                    <label class="checkbox-label">
                         <input type="checkbox" name="email_notifications" <?php echo $user['email_notifications'] ? 'checked' : ''; ?>>
+                        <span class="checkmark"></span>
                         Receive email notifications
                     </label>
                 </div>
             </div>
             
             <div class="form-actions">
-                <button type="submit" name="update_settings" class="btn btn-primary">Save Changes</button>
+                <button type="submit" name="update_settings" class="btn btn-primary">
+                    <span class="btn-text">Save Changes</span>
+                    <span class="btn-loading" style="display: none;">Saving...</span>
+                </button>
                 <a href="?page=home" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
@@ -193,8 +109,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_settings'])) {
         color: #2c3e50;
     }
 
-    .form-group label input[type="checkbox"] {
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        font-weight: normal !important;
+    }
+
+    .checkbox-label input[type="checkbox"] {
         margin-right: 8px;
+        transform: scale(1.2);
     }
 
     .form-control {
@@ -211,6 +135,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_settings'])) {
         outline: none;
         border-color: #007bff;
         box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+    }
+
+    .form-control.error {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 2px rgba(220,53,69,0.25);
+    }
+
+    .field-error-container {
+        min-height: 20px;
+    }
+
+    .field-error {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 5px;
+        display: block;
     }
 
     .form-actions {
@@ -230,6 +170,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_settings'])) {
         display: inline-block;
         text-align: center;
         transition: all 0.3s;
+        position: relative;
+    }
+
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
     }
 
     .btn-primary {
@@ -237,7 +183,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_settings'])) {
         color: white;
     }
 
-    .btn-primary:hover {
+    .btn-primary:hover:not(:disabled) {
         background: #0056b3;
     }
 
@@ -248,6 +194,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_settings'])) {
 
     .btn-secondary:hover {
         background: #545b62;
+    }
+
+    .btn-loading {
+        display: none;
+    }
+
+    .btn.loading .btn-text {
+        display: none;
+    }
+
+    .btn.loading .btn-loading {
+        display: inline;
     }
 
     @media (max-width: 768px) {

@@ -6,6 +6,338 @@ $user = getCurrentUser();
 $database = new Database();
 $db = $database->getConnection();
 
+// Handle AJAX requests first
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Check if it's an AJAX request
+    $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+              strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+    
+    $response = ['success' => false, 'message' => ''];
+    
+    // Handle status update
+    if (isset($_POST['update_status'])) {
+        $projectId = (int)$_POST['project_id'];
+        $newStatus = $_POST['new_status'];
+        
+        // Verify project belongs to current user
+        $query = "SELECT id FROM projects WHERE id = ? AND user_id = ?";
+        $stmt = $db->prepare($query);
+        $stmt->execute([$projectId, $user['id']]);
+        
+        if ($stmt->fetch()) {
+            $query = "UPDATE projects SET status = ? WHERE id = ?";
+            $stmt = $db->prepare($query);
+            
+            if ($stmt->execute([$newStatus, $projectId])) {
+                $response['success'] = true;
+                $response['message'] = 'Status updated successfully';
+                $response['new_status'] = $newStatus;
+                
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode($response);
+                    exit;
+                }
+                
+                $message = 'Project status updated successfully!';
+                $messageType = 'success';
+            } else {
+                $response['message'] = 'Failed to update status';
+                
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode($response);
+                    exit;
+                }
+                
+                $message = 'Failed to update project status.';
+                $messageType = 'error';
+            }
+        } else {
+            $response['message'] = 'Project not found';
+            
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode($response);
+                exit;
+            }
+            
+            $message = 'Project not found.';
+            $messageType = 'error';
+        }
+    }
+    
+    // Handle project deletion
+    if (isset($_POST['delete_project'])) {
+        $projectId = (int)$_POST['project_id'];
+        
+        // Verify project belongs to current user
+        $query = "SELECT id FROM projects WHERE id = ? AND user_id = ?";
+        $stmt = $db->prepare($query);
+        $stmt->execute([$projectId, $user['id']]);
+        
+        if ($stmt->fetch()) {
+            $query = "DELETE FROM projects WHERE id = ?";
+            $stmt = $db->prepare($query);
+            
+            if ($stmt->execute([$projectId])) {
+                $response['success'] = true;
+                $response['message'] = 'Project deleted successfully';
+                
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode($response);
+                    exit;
+                }
+                
+                $message = 'Project deleted successfully!';
+                $messageType = 'success';
+            } else {
+                $response['message'] = 'Failed to delete project';
+                
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode($response);
+                    exit;
+                }
+                
+                $message = 'Failed to delete project.';
+                $messageType = 'error';
+            }
+        } else {
+            $response['message'] = 'Project not found';
+            
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode($response);
+                exit;
+            }
+            
+            $message = 'Project not found.';
+            $messageType = 'error';
+        }
+    }
+    
+    // Handle project creation
+    if (isset($_POST['create_project'])) {
+        $title = sanitizeInput($_POST['title'] ?? '');
+        $description = sanitizeInput($_POST['description'] ?? '');
+        $status = $_POST['status'] ?? 'pending';
+        $priority = $_POST['priority'] ?? 'medium';
+        $deadline = $_POST['deadline'] ?? null;
+        
+        if (empty($title) || empty($description)) {
+            $response['message'] = 'Please fill in all required fields';
+            
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode($response);
+                exit;
+            }
+            
+            $message = 'Please fill in all required fields';
+            $messageType = 'error';
+        } else {
+            $query = "INSERT INTO projects (user_id, title, description, status, priority, deadline) VALUES (?, ?, ?, ?, ?, ?)";
+            $stmt = $db->prepare($query);
+            
+            if ($stmt->execute([$user['id'], $title, $description, $status, $priority, $deadline ?: null])) {
+                $response['success'] = true;
+                $response['message'] = 'Project created successfully';
+                $response['redirect'] = '?page=projects';
+                
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode($response);
+                    exit;
+                }
+                
+                $message = 'Project created successfully!';
+                $messageType = 'success';
+                $_POST = []; // Clear form data
+            } else {
+                $response['message'] = 'Failed to create project';
+                
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode($response);
+                    exit;
+                }
+                
+                $message = 'Failed to create project. Please try again.';
+                $messageType = 'error';
+            }
+        }
+    }
+    
+    // Handle settings update
+    if (isset($_POST['update_settings'])) {
+        $name = sanitizeInput($_POST['name'] ?? '');
+        $email = sanitizeInput($_POST['email'] ?? '');
+        $currentPassword = $_POST['current_password'] ?? '';
+        $newPassword = $_POST['new_password'] ?? '';
+        $theme = $_POST['theme'] ?? 'light';
+        $emailNotifications = isset($_POST['email_notifications']) ? 1 : 0;
+        
+        if (empty($name) || empty($email)) {
+            $response['message'] = 'Name and email are required';
+            
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode($response);
+                exit;
+            }
+            
+            $message = 'Name and email are required';
+            $messageType = 'error';
+        } elseif (!validateEmail($email)) {
+            $response['message'] = 'Please enter a valid email address';
+            
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode($response);
+                exit;
+            }
+            
+            $message = 'Please enter a valid email address';
+            $messageType = 'error';
+        } else {
+            // Check if email is already taken by another user
+            $query = "SELECT id FROM users WHERE email = ? AND id != ?";
+            $stmt = $db->prepare($query);
+            $stmt->execute([$email, $user['id']]);
+            
+            if ($stmt->fetch()) {
+                $response['message'] = 'Email address is already taken';
+                
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode($response);
+                    exit;
+                }
+                
+                $message = 'Email address is already taken';
+                $messageType = 'error';
+            } else {
+                // If password change is requested
+                if (!empty($currentPassword) || !empty($newPassword)) {
+                    if (empty($currentPassword) || empty($newPassword)) {
+                        $response['message'] = 'Both current and new password are required to change password';
+                        
+                        if ($isAjax) {
+                            header('Content-Type: application/json');
+                            echo json_encode($response);
+                            exit;
+                        }
+                        
+                        $message = 'Both current and new password are required to change password';
+                        $messageType = 'error';
+                    } elseif (strlen($newPassword) < 6) {
+                        $response['message'] = 'New password must be at least 6 characters long';
+                        
+                        if ($isAjax) {
+                            header('Content-Type: application/json');
+                            echo json_encode($response);
+                            exit;
+                        }
+                        
+                        $message = 'New password must be at least 6 characters long';
+                        $messageType = 'error';
+                    } else {
+                        // Verify current password
+                        $query = "SELECT password FROM users WHERE id = ?";
+                        $stmt = $db->prepare($query);
+                        $stmt->execute([$user['id']]);
+                        $userData = $stmt->fetch();
+                        
+                        if (!verifyPassword($currentPassword, $userData['password'])) {
+                            $response['message'] = 'Current password is incorrect';
+                            
+                            if ($isAjax) {
+                                header('Content-Type: application/json');
+                                echo json_encode($response);
+                                exit;
+                            }
+                            
+                            $message = 'Current password is incorrect';
+                            $messageType = 'error';
+                        } else {
+                            // Update with new password
+                            $hashedPassword = hashPassword($newPassword);
+                            $query = "UPDATE users SET name = ?, email = ?, password = ?, theme = ?, email_notifications = ? WHERE id = ?";
+                            $stmt = $db->prepare($query);
+                            
+                            if ($stmt->execute([$name, $email, $hashedPassword, $theme, $emailNotifications, $user['id']])) {
+                                $response['success'] = true;
+                                $response['message'] = 'Settings updated successfully!';
+                                
+                                if ($isAjax) {
+                                    header('Content-Type: application/json');
+                                    echo json_encode($response);
+                                    exit;
+                                }
+                                
+                                $message = 'Settings updated successfully!';
+                                $messageType = 'success';
+                                // Update session
+                                $_SESSION['user_name'] = $name;
+                                $_SESSION['user_email'] = $email;
+                                // Refresh user data
+                                $user = getCurrentUser();
+                            } else {
+                                $response['message'] = 'Failed to update settings';
+                                
+                                if ($isAjax) {
+                                    header('Content-Type: application/json');
+                                    echo json_encode($response);
+                                    exit;
+                                }
+                                
+                                $message = 'Failed to update settings';
+                                $messageType = 'error';
+                            }
+                        }
+                    }
+                } else {
+                    // Update without password change
+                    $query = "UPDATE users SET name = ?, email = ?, theme = ?, email_notifications = ? WHERE id = ?";
+                    $stmt = $db->prepare($query);
+                    
+                    if ($stmt->execute([$name, $email, $theme, $emailNotifications, $user['id']])) {
+                        $response['success'] = true;
+                        $response['message'] = 'Settings updated successfully!';
+                        
+                        if ($isAjax) {
+                            header('Content-Type: application/json');
+                            echo json_encode($response);
+                            exit;
+                        }
+                        
+                        $message = 'Settings updated successfully!';
+                        $messageType = 'success';
+                        // Update session
+                        $_SESSION['user_name'] = $name;
+                        $_SESSION['user_email'] = $email;
+                        // Refresh user data
+                        $user = getCurrentUser();
+                    } else {
+                        $response['message'] = 'Failed to update settings';
+                        
+                        if ($isAjax) {
+                            header('Content-Type: application/json');
+                            echo json_encode($response);
+                            exit;
+                        }
+                        
+                        $message = 'Failed to update settings';
+                        $messageType = 'error';
+                    }
+                }
+            }
+        }
+    }
+}
+
 // Get dashboard statistics
 $stats = [];
 $query = "SELECT 
@@ -140,6 +472,25 @@ if (!in_array($page, $validPages)) {
             background: #c0392b;
         }
         
+        /* Message styles */
+        .message {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .message-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
         /* Stats Cards */
         .stats-grid {
             display: grid;
@@ -167,44 +518,6 @@ if (!in_array($page, $validPages)) {
             font-size: 0.9em;
             opacity: 0.9;
         }
-        
-        /* Projects Grid */
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        
-        .project-card {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            border: 1px solid #e9ecef;
-        }
-        
-        .project-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        
-        .project-header h3 {
-            margin: 0;
-            color: #2c3e50;
-        }
-        
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        
-        .status-pending { background: #fff3cd; color: #856404; }
-        .status-ongoing { background: #d1ecf1; color: #0c5460; }
-        .status-completed { background: #d4edda; color: #155724; }
         
         @media (max-width: 768px) {
             .sidebar {
@@ -287,6 +600,13 @@ if (!in_array($page, $validPages)) {
                 </div>
             </div>
             
+            <!-- Display messages -->
+            <?php if (isset($message)): ?>
+                <div class="message message-<?php echo $messageType; ?>">
+                    <?php echo htmlspecialchars($message); ?>
+                </div>
+            <?php endif; ?>
+            
             <div class="content-area">
                 <?php
                 // Include the appropriate page content
@@ -311,6 +631,8 @@ if (!in_array($page, $validPages)) {
         </main>
     </div>
 
+    <!-- Include the JavaScript file -->
+    <script src="../js/app.js"></script>
     <script>
         // Toggle sidebar for mobile
         function toggleSidebar() {
@@ -329,56 +651,6 @@ if (!in_array($page, $validPages)) {
                 sidebar.classList.remove('active');
             }
         });
-        
-        // Project management functions
-        function deleteProject(projectId) {
-            if (confirm('Are you sure you want to delete this project?')) {
-                fetch('php_api/delete_project.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ project_id: projectId })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        location.reload();
-                    } else {
-                        alert('Error deleting project: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error deleting project');
-                });
-            }
-        }
-        
-        function updateProjectStatus(projectId, newStatus) {
-            fetch('php_api/update_project.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ 
-                    project_id: projectId, 
-                    status: newStatus 
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert('Error updating project: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error updating project');
-            });
-        }
     </script>
 </body>
 </html>

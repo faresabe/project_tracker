@@ -1,59 +1,20 @@
-<?php
-$error = '';
-$success = '';
-
-// Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_project'])) {
-    $title = sanitizeInput($_POST['title'] ?? '');
-    $description = sanitizeInput($_POST['description'] ?? '');
-    $status = $_POST['status'] ?? 'pending';
-    $priority = $_POST['priority'] ?? 'medium';
-    $deadline = $_POST['deadline'] ?? null;
-    
-    if (empty($title) || empty($description)) {
-        $error = 'Please fill in all required fields';
-    } else {
-        $query = "INSERT INTO projects (user_id, title, description, status, priority, deadline) VALUES (?, ?, ?, ?, ?, ?)";
-        $stmt = $db->prepare($query);
-        
-        if ($stmt->execute([$user['id'], $title, $description, $status, $priority, $deadline ?: null])) {
-            $success = 'Project created successfully!';
-            // Clear form data
-            $_POST = [];
-        } else {
-            $error = 'Failed to create project. Please try again.';
-        }
-    }
-}
-?>
-
 <div style="padding: 20px;">
     <div style="max-width: 600px; margin: 0 auto;">
         <h2 style="margin-bottom: 20px;">Create New Project</h2>
         
-        <?php if ($error): ?>
-            <div style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
-                <?php echo $error; ?>
-            </div>
-        <?php endif; ?>
-        
-        <?php if ($success): ?>
-            <div style="background: #d4edda; color: #155724; padding: 12px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
-                <?php echo $success; ?>
-            </div>
-        <?php endif; ?>
-        
-        <form method="POST" class="project-form">
+        <form method="POST" class="project-form ajax-form" data-ajax="true" data-redirect="?page=projects">
             <div class="form-group">
                 <label for="projectTitle">Project Title *</label>
                 <input type="text" id="projectTitle" name="title" class="form-control" required 
                        placeholder="Enter project title" value="<?php echo htmlspecialchars($_POST['title'] ?? ''); ?>">
+                <div class="field-error-container"></div>
             </div>
             
             <div class="form-group">
                 <label for="projectDescription">Project Description *</label>
                 <textarea id="projectDescription" name="description" class="form-control" 
                           rows="4" required placeholder="Describe your project..."><?php echo htmlspecialchars($_POST['description'] ?? ''); ?></textarea>
+                <div class="field-error-container"></div>
             </div>
             
             <div class="form-group">
@@ -81,7 +42,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_project'])) {
             </div>
             
             <div class="form-actions">
-                <button type="submit" name="create_project" class="btn btn-primary">Create Project</button>
+                <button type="submit" name="create_project" class="btn btn-primary">
+                    <span class="btn-text">Create Project</span>
+                    <span class="btn-loading" style="display: none;">Creating...</span>
+                </button>
                 <a href="?page=home" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
@@ -123,6 +87,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_project'])) {
         box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
     }
 
+    .form-control.error {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 2px rgba(220,53,69,0.25);
+    }
+
+    .field-error-container {
+        min-height: 20px;
+    }
+
+    .field-error {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 5px;
+        display: block;
+    }
+
     .form-actions {
         display: flex;
         gap: 15px;
@@ -140,6 +120,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_project'])) {
         display: inline-block;
         text-align: center;
         transition: all 0.3s;
+        position: relative;
+    }
+
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
     }
 
     .btn-primary {
@@ -147,7 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_project'])) {
         color: white;
     }
 
-    .btn-primary:hover {
+    .btn-primary:hover:not(:disabled) {
         background: #0056b3;
     }
 
@@ -158,6 +144,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_project'])) {
 
     .btn-secondary:hover {
         background: #545b62;
+    }
+
+    .btn-loading {
+        display: none;
+    }
+
+    .btn.loading .btn-text {
+        display: none;
+    }
+
+    .btn.loading .btn-loading {
+        display: inline;
+    }
+
+    /* Form validation styles */
+    .form-group.has-error .form-control {
+        border-color: #dc3545;
+    }
+
+    .form-group.has-success .form-control {
+        border-color: #28a745;
     }
 
     @media (max-width: 768px) {
