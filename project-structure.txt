@@ -1,0 +1,57 @@
+PROJECT MANAGER - COMPLETE FILE LIST
+=====================================
+
+ROOT FILES:
+- index.html (Landing page)
+- style.css (Main stylesheet)
+- README.md (Project documentation)
+
+AUTHENTICATION FOLDER:
+- authentication/config.php
+- authentication/db_connection.php  
+- authentication/sign_in.php
+- authentication/sign_up.php
+- authentication/auth_php/check_auth.php
+- authentication/auth_php/login.php
+- authentication/auth_php/logout.php
+- authentication/auth_php/register.php
+
+DASHBOARD FOLDER:
+- dashboard/board.php (Main dashboard)
+- dashboard/board.css (Dashboard styles)
+- dashboard/partials/home.php
+- dashboard/partials/add_project.php
+- dashboard/partials/project_details.php
+- dashboard/partials/settings.php
+- dashboard/php_api/delete_project.php
+- dashboard/php_api/delete_task.php
+- dashboard/php_api/get_project_details.php
+- dashboard/php_api/get_projects.php
+- dashboard/php_api/logout.php
+- dashboard/php_api/save_project.php
+- dashboard/php_api/save_task.php
+- dashboard/php_api/update_project.php
+- dashboard/php_api/update_project_status.php
+
+DATABASE FOLDER:
+- db/project_manager.sql (Database structure)
+- db/README.md (Database setup instructions)
+
+ASSETS FOLDER:
+- Assets/Portfolio-dashboard-compressed.png
+- Assets/what-is-a-task-tracker-and-why-you-need-one.jpeg
+- Assets/6d41f87133c97a65a0fa79c7324f142e.jpg
+- Assets/Lets-talk-about-blockchain-not-crypto.webp
+
+CONFIGURATION FILES:
+- .vscode/settings.json
+- .gitignore
+
+TOTAL FILES: 30+ files across multiple folders
+
+DOWNLOAD METHOD:
+1. Right-click each file in the file explorer
+2. Select "Download" or "Save As"
+3. Maintain the exact folder structure shown above
+4. Import database using db/project_manager.sql
+5. Configure authentication/db_connection.php with your MySQL settings
