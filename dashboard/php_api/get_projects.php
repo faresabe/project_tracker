@@ -1,21 +1,29 @@
 <?php
+require_once '../../authentication/db_connection.php';
+
 header('Content-Type: application/json');
+startSession();
 
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(['success' => false, 'message' => 'Not authenticated']);
+    exit();
+}
 
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "project_manager";
+$database = new Database();
+$db = $database->getConnection();
 
 try {
-    $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $query = "SELECT * FROM projects WHERE user_id = ? ORDER BY created_at DESC";
+    $stmt = $db->prepare($query);
+    $stmt->execute([$_SESSION['user_id']]);
+    $projects = $stmt->fetchAll();
     
-    $stmt = $conn->query("SELECT * FROM projects ORDER BY created_at DESC");
-    $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-    echo json_encode($projects);
-} catch(PDOException $e) {
-    echo json_encode(['error' => $e->getMessage()]);
+    echo json_encode([
+        'success' => true,
+        'projects' => $projects
+    ]);
+} catch (Exception $e) {
+    error_log("Error fetching projects: " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'Database error']);
 }
 ?>

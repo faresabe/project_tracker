@@ -1,65 +1,54 @@
 <?php
+require_once '../../authentication/db_connection.php';
+
 header('Content-Type: application/json');
+startSession();
 
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "project_manager";
-
-$json = file_get_contents('php://input');
-$data = json_decode($json, true);
-
-if (empty($data['id'])) {
-  echo json_encode(['success' => false, 'error' => 'Project ID required']);
-  exit;
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(['success' => false, 'message' => 'Not authenticated']);
+    exit();
 }
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+    exit();
+}
+
+$input = json_decode(file_get_contents('php://input'), true);
+
+$projectId = (int)($input['project_id'] ?? 0);
+$status = $input['status'] ?? '';
+
+if (!$projectId || empty($status)) {
+    echo json_encode(['success' => false, 'message' => 'Project ID and status are required']);
+    exit();
+}
+
+$database = new Database();
+$db = $database->getConnection();
 
 try {
-  $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-  $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-  // Update the project
-  $taskStmt = $conn->prepare("
-  INSERT INTO tasks (project_id, name, type, description, start_date, end_date, status)
-  VALUES (:project_id, :name, :type, :description, :start_date, :end_date, :status)
-");
-
-
-$taskStmt->execute([
-    ':project_id' => $data['id'],
-    ':name' => $task['name'] ?? '',
-    ':type' => $task['type'] ?? '',
-    ':description' => $task['description'] ?? '',
-    ':start_date' => $task['start_date'] ?? null,
-    ':end_date' => $task['end_date'] ?? null,
-    ':status' => $task['status'] ?? 'pending' 
-  ]);
-  
-
- 
-  $deleteStmt = $conn->prepare("DELETE FROM tasks WHERE project_id = :project_id");
-  $deleteStmt->execute([':project_id' => $data['id']]);
-
-  
-  if (!empty($data['tasks']) && is_array($data['tasks'])) {
-    $taskStmt = $conn->prepare("
-      INSERT INTO tasks (project_id, name, type, description, start_date, end_date) 
-      VALUES (:project_id, :name, :type, :description, :start_date, :end_date)
-    ");
-
-    foreach ($data['tasks'] as $task) {
-      $taskStmt->execute([
-        ':project_id' => $data['id'],
-        ':name' => $task['name'] ?? '',
-        ':type' => $task['type'] ?? '',
-        ':description' => $task['description'] ?? '',
-        ':start_date' => $task['start_date'] ?? null,
-        ':end_date' => $task['end_date'] ?? null
-      ]);
+    // Verify project belongs to current user
+    $query = "SELECT id FROM projects WHERE id = ? AND user_id = ?";
+    $stmt = $db->prepare($query);
+    $stmt->execute([$projectId, $_SESSION['user_id']]);
+    
+    if (!$stmt->fetch()) {
+        echo json_encode(['success' => false, 'message' => 'Project not found']);
+        exit();
     }
-  }
-
-  echo json_encode(['success' => true]);
-} catch (PDOException $e) {
-  echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    
+    // Update project status
+    $query = "UPDATE projects SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+    $stmt = $db->prepare($query);
+    
+    if ($stmt->execute([$status, $projectId])) {
+        echo json_encode(['success' => true, 'message' => 'Project updated successfully']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Failed to update project']);
+    }
+} catch (Exception $e) {
+    error_log("Error updating project: " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'Database error']);
 }
+?>

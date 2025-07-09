@@ -1,63 +1,51 @@
 <?php
+require_once '../../authentication/db_connection.php';
+
 header('Content-Type: application/json');
+startSession();
 
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "project_manager";
-
-$json = file_get_contents('php://input');
-$data = json_decode($json, true);
-
-// Validate
-if (empty($data['title'])) {
-    echo json_encode(['success' => false, 'error' => 'Project title is required']);
-    exit;
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(['success' => false, 'message' => 'Not authenticated']);
+    exit();
 }
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+    exit();
+}
+
+$input = json_decode(file_get_contents('php://input'), true);
+
+$title = sanitizeInput($input['title'] ?? '');
+$description = sanitizeInput($input['description'] ?? '');
+$status = $input['status'] ?? 'pending';
+$priority = $input['priority'] ?? 'medium';
+$deadline = $input['deadline'] ?? null;
+
+if (empty($title) || empty($description)) {
+    echo json_encode(['success' => false, 'message' => 'Title and description are required']);
+    exit();
+}
+
+$database = new Database();
+$db = $database->getConnection();
 
 try {
-    $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-   
-    $stmt = $conn->prepare("INSERT INTO projects (title, type, description, start_date, end_date, status)
-                            VALUES (:title, :type, :description, :start_date, :end_date, :status)");
-
-    $success = $stmt->execute([
-        ':title' => $data['title'],
-        ':type' => $data['type'] ?? 'web',
-        ':description' => $data['description'] ?? '',
-        ':start_date' => $data['start_date'] ?? null,
-        ':end_date' => $data['end_date'] ?? null,
-        ':status' => $data['status'] ?? 'pending'
-    ]);
-
-    if ($success) {
-        $projectId = $conn->lastInsertId();
-
-       
-        if (!empty($data['tasks']) && is_array($data['tasks'])) {
-            $taskStmt = $conn->prepare("INSERT INTO tasks (project_id, name, type, description, start_date, end_date, status)
-                                        VALUES (:project_id, :name, :type, :description, :start_date, :end_date, :status)");
-
-            foreach ($data['tasks'] as $task) {
-                $taskStmt->execute([
-                    ':project_id' => $projectId,
-                    ':name' => $task['name'] ?? '',
-                    ':type' => $task['type'] ?? '',
-                    ':description' => $task['description'] ?? '',
-                    ':start_date' => $task['start_date'] ?? null,
-                    ':end_date' => $task['end_date'] ?? null,
-                    ':status' => $task['status'] ?? 'pending'
-                ]);
-            }
-        }
-
-        echo json_encode(['success' => true, 'projectId' => $projectId]);
+    $query = "INSERT INTO projects (user_id, title, description, status, priority, deadline) VALUES (?, ?, ?, ?, ?, ?)";
+    $stmt = $db->prepare($query);
+    
+    if ($stmt->execute([$_SESSION['user_id'], $title, $description, $status, $priority, $deadline ?: null])) {
+        $projectId = $db->lastInsertId();
+        echo json_encode([
+            'success' => true, 
+            'message' => 'Project created successfully',
+            'project_id' => $projectId
+        ]);
     } else {
-        echo json_encode(['success' => false, 'error' => 'Failed to save project']);
+        echo json_encode(['success' => false, 'message' => 'Failed to create project']);
     }
-
-} catch (PDOException $e) {
-    echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+} catch (Exception $e) {
+    error_log("Error creating project: " . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'Database error']);
 }
+?>
