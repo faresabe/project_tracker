@@ -20,7 +20,8 @@ Users can **register**, **log in**,  and track their own **projects** and **task
 ![Group 1000004353](https://github.com/user-attachments/assets/f3702b5b-4f14-480d-820e-6cca2175c2dc)
 
 ### 📌 Dashboard
-![Group 1000004354 (1)](https://github.com/user-attachments/assets/b79e2afa-0aee-4daf-a7f1-0c6aa358bea7)
+![dashboard 2](https://github.com/user-attachments/assets/3e4621a2-227c-4cdc-8e0e-885164c115db)
+
 
 
 # 🚀 Project tracker — Setup & Run Guide
