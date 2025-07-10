@@ -2,7 +2,7 @@
     <div style="max-width: 600px; margin: 0 auto;">
         <h2 style="margin-bottom: 20px;">Account Settings</h2>
         
-        <form method="POST" class="settings-form ajax-form" data-ajax="true">
+        <form method="POST" class="settings-form">
             <div class="settings-section">
                 <h3>Profile Information</h3>
                 
@@ -10,14 +10,12 @@
                     <label for="userName">Full Name *</label>
                     <input type="text" id="userName" name="name" class="form-control" required 
                            value="<?php echo htmlspecialchars($user['name']); ?>">
-                    <div class="field-error-container"></div>
                 </div>
                 
                 <div class="form-group">
                     <label for="userEmail">Email Address *</label>
                     <input type="email" id="userEmail" name="email" class="form-control" required 
                            value="<?php echo htmlspecialchars($user['email']); ?>">
-                    <div class="field-error-container"></div>
                 </div>
             </div>
             
@@ -30,14 +28,12 @@
                 <div class="form-group">
                     <label for="currentPassword">Current Password</label>
                     <input type="password" id="currentPassword" name="current_password" class="form-control">
-                    <div class="field-error-container"></div>
                 </div>
                 
                 <div class="form-group">
                     <label for="newPassword">New Password</label>
                     <input type="password" id="newPassword" name="new_password" class="form-control" minlength="6">
                     <small style="color: #666;">Minimum 6 characters</small>
-                    <div class="field-error-container"></div>
                 </div>
             </div>
             
@@ -63,8 +59,7 @@
             
             <div class="form-actions">
                 <button type="submit" name="update_settings" class="btn btn-primary">
-                    <span class="btn-text">Save Changes</span>
-                    <span class="btn-loading" style="display: none;">Saving...</span>
+                    Save Changes
                 </button>
                 <a href="?page=home" class="btn btn-secondary">Cancel</a>
             </div>
@@ -137,22 +132,6 @@
         box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
     }
 
-    .form-control.error {
-        border-color: #dc3545;
-        box-shadow: 0 0 0 2px rgba(220,53,69,0.25);
-    }
-
-    .field-error-container {
-        min-height: 20px;
-    }
-
-    .field-error {
-        color: #dc3545;
-        font-size: 12px;
-        margin-top: 5px;
-        display: block;
-    }
-
     .form-actions {
         display: flex;
         gap: 15px;
@@ -170,12 +149,6 @@
         display: inline-block;
         text-align: center;
         transition: all 0.3s;
-        position: relative;
-    }
-
-    .btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
     }
 
     .btn-primary {
@@ -183,7 +156,7 @@
         color: white;
     }
 
-    .btn-primary:hover:not(:disabled) {
+    .btn-primary:hover {
         background: #0056b3;
     }
 
@@ -194,18 +167,6 @@
 
     .btn-secondary:hover {
         background: #545b62;
-    }
-
-    .btn-loading {
-        display: none;
-    }
-
-    .btn.loading .btn-text {
-        display: none;
-    }
-
-    .btn.loading .btn-loading {
-        display: inline;
     }
 
     @media (max-width: 768px) {

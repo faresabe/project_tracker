@@ -49,10 +49,7 @@
         <h3>Recent Projects</h3>
         <div class="projects-list">
             <?php foreach ($recentProjects as $project): ?>
-                <div class="project-item" 
-                     data-project-id="<?php echo $project['id']; ?>" 
-                     data-status="<?php echo $project['status']; ?>" 
-                     data-priority="<?php echo $project['priority']; ?>">
+                <div class="project-item">
                     <div class="project-info">
                         <h4>
                             <a href="project_detail.php?id=<?php echo $project['id']; ?>" style="text-decoration: none; color: #2c3e50;">
@@ -67,18 +64,22 @@
                             <?php echo ucfirst($project['status']); ?>
                         </span>
                         <div class="project-actions-mini">
-                            <select class="status-select-mini" data-project-id="<?php echo $project['id']; ?>">
-                                <option value="">Change Status</option>
-                                <?php if ($project['status'] !== 'pending'): ?>
-                                    <option value="pending">Pending</option>
-                                <?php endif; ?>
-                                <?php if ($project['status'] !== 'ongoing'): ?>
-                                    <option value="ongoing">Ongoing</option>
-                                <?php endif; ?>
-                                <?php if ($project['status'] !== 'completed'): ?>
-                                    <option value="completed">Completed</option>
-                                <?php endif; ?>
-                            </select>
+                            <form method="POST" style="display: inline;">
+                                <input type="hidden" name="project_id" value="<?php echo $project['id']; ?>">
+                                <select name="new_status" class="status-select-mini" onchange="this.form.submit()">
+                                    <option value="">Change Status</option>
+                                    <?php if ($project['status'] !== 'pending'): ?>
+                                        <option value="pending">Pending</option>
+                                    <?php endif; ?>
+                                    <?php if ($project['status'] !== 'ongoing'): ?>
+                                        <option value="ongoing">Ongoing</option>
+                                    <?php endif; ?>
+                                    <?php if ($project['status'] !== 'completed'): ?>
+                                        <option value="completed">Completed</option>
+                                    <?php endif; ?>
+                                </select>
+                                <input type="hidden" name="update_status" value="1">
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -173,11 +174,6 @@
 
     .project-item:hover {
         background: #f8f9fa;
-    }
-
-    .project-item.loading {
-        opacity: 0.6;
-        pointer-events: none;
     }
 
     .project-info {

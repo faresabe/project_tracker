@@ -2,19 +2,17 @@
     <div style="max-width: 600px; margin: 0 auto;">
         <h2 style="margin-bottom: 20px;">Create New Project</h2>
         
-        <form method="POST" class="project-form ajax-form" data-ajax="true" data-redirect="?page=projects">
+        <form method="POST" class="project-form">
             <div class="form-group">
                 <label for="projectTitle">Project Title *</label>
                 <input type="text" id="projectTitle" name="title" class="form-control" required 
                        placeholder="Enter project title" value="<?php echo htmlspecialchars($_POST['title'] ?? ''); ?>">
-                <div class="field-error-container"></div>
             </div>
             
             <div class="form-group">
                 <label for="projectDescription">Project Description *</label>
                 <textarea id="projectDescription" name="description" class="form-control" 
                           rows="4" required placeholder="Describe your project..."><?php echo htmlspecialchars($_POST['description'] ?? ''); ?></textarea>
-                <div class="field-error-container"></div>
             </div>
             
             <div class="form-group">
@@ -43,8 +41,7 @@
             
             <div class="form-actions">
                 <button type="submit" name="create_project" class="btn btn-primary">
-                    <span class="btn-text">Create Project</span>
-                    <span class="btn-loading" style="display: none;">Creating...</span>
+                    Create Project
                 </button>
                 <a href="?page=home" class="btn btn-secondary">Cancel</a>
             </div>
@@ -87,22 +84,6 @@
         box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
     }
 
-    .form-control.error {
-        border-color: #dc3545;
-        box-shadow: 0 0 0 2px rgba(220,53,69,0.25);
-    }
-
-    .field-error-container {
-        min-height: 20px;
-    }
-
-    .field-error {
-        color: #dc3545;
-        font-size: 12px;
-        margin-top: 5px;
-        display: block;
-    }
-
     .form-actions {
         display: flex;
         gap: 15px;
@@ -120,12 +101,6 @@
         display: inline-block;
         text-align: center;
         transition: all 0.3s;
-        position: relative;
-    }
-
-    .btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
     }
 
     .btn-primary {
@@ -133,7 +108,7 @@
         color: white;
     }
 
-    .btn-primary:hover:not(:disabled) {
+    .btn-primary:hover {
         background: #0056b3;
     }
 
@@ -144,27 +119,6 @@
 
     .btn-secondary:hover {
         background: #545b62;
-    }
-
-    .btn-loading {
-        display: none;
-    }
-
-    .btn.loading .btn-text {
-        display: none;
-    }
-
-    .btn.loading .btn-loading {
-        display: inline;
-    }
-
-    /* Form validation styles */
-    .form-group.has-error .form-control {
-        border-color: #dc3545;
-    }
-
-    .form-group.has-success .form-control {
-        border-color: #28a745;
     }
 
     @media (max-width: 768px) {

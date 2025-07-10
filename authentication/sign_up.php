@@ -135,7 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="alert alert-success"><?php echo $success; ?></div>
             <?php endif; ?>
             
-            <form method="POST">
+            <form method="POST" id="signup-form">
                 <div class="form-group">
                     <label>Full Name</label>
                     <input type="text" name="name" class="form-control" required 
@@ -161,12 +161,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 <button type="submit" class="btn btn-primary" style="width: 100%;">Create Account</button>
             </form>
-            
+            <div id="form-message"></div>
             <div class="auth-links">
                 <p>Already have an account? <a href="sign_in.php">Sign in here</a></p>
                 <p><a href="../index.html">← Back to Home</a></p>
             </div>
         </div>
     </div>
+
 </body>
 </html>

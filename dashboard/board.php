@@ -6,13 +6,38 @@ $user = getCurrentUser();
 $database = new Database();
 $db = $database->getConnection();
 
-// Handle AJAX requests first
+// Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Check if it's an AJAX request
-    $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
-              strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
-    
-    $response = ['success' => false, 'message' => ''];
+    // Handle project creation
+    if (isset($_POST['create_project'])) {
+        $title = sanitizeInput($_POST['title'] ?? '');
+        $description = sanitizeInput($_POST['description'] ?? '');
+        $status = $_POST['status'] ?? 'pending';
+        $priority = $_POST['priority'] ?? 'medium';
+        $deadline = $_POST['deadline'] ?? null;
+        
+        if (empty($title) || empty($description)) {
+            $message = 'Please fill in all required fields';
+            $messageType = 'error';
+        } else {
+            $query = "INSERT INTO projects (user_id, title, description, status, priority, deadline) VALUES (?, ?, ?, ?, ?, ?)";
+            $stmt = $db->prepare($query);
+            
+            $deadlineValue = $deadline && $deadline !== '' ? $deadline : null;
+            
+            if ($stmt->execute([$user['id'], $title, $description, $status, $priority, $deadlineValue])) {
+                $message = 'Project created successfully!';
+                $messageType = 'success';
+                $_POST = []; // Clear form data
+                // Redirect to projects page
+                header('Location: ?page=projects&success=1');
+                exit;
+            } else {
+                $message = 'Failed to create project. Please try again.';
+                $messageType = 'error';
+            }
+        }
+    }
     
     // Handle status update
     if (isset($_POST['update_status'])) {
@@ -29,39 +54,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $db->prepare($query);
             
             if ($stmt->execute([$newStatus, $projectId])) {
-                $response['success'] = true;
-                $response['message'] = 'Status updated successfully';
-                $response['new_status'] = $newStatus;
-                
-                if ($isAjax) {
-                    header('Content-Type: application/json');
-                    echo json_encode($response);
-                    exit;
-                }
-                
                 $message = 'Project status updated successfully!';
                 $messageType = 'success';
             } else {
-                $response['message'] = 'Failed to update status';
-                
-                if ($isAjax) {
-                    header('Content-Type: application/json');
-                    echo json_encode($response);
-                    exit;
-                }
-                
                 $message = 'Failed to update project status.';
                 $messageType = 'error';
             }
         } else {
-            $response['message'] = 'Project not found';
-            
-            if ($isAjax) {
-                header('Content-Type: application/json');
-                echo json_encode($response);
-                exit;
-            }
-            
             $message = 'Project not found.';
             $messageType = 'error';
         }
@@ -81,92 +80,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $db->prepare($query);
             
             if ($stmt->execute([$projectId])) {
-                $response['success'] = true;
-                $response['message'] = 'Project deleted successfully';
-                
-                if ($isAjax) {
-                    header('Content-Type: application/json');
-                    echo json_encode($response);
-                    exit;
-                }
-                
                 $message = 'Project deleted successfully!';
                 $messageType = 'success';
             } else {
-                $response['message'] = 'Failed to delete project';
-                
-                if ($isAjax) {
-                    header('Content-Type: application/json');
-                    echo json_encode($response);
-                    exit;
-                }
-                
                 $message = 'Failed to delete project.';
                 $messageType = 'error';
             }
         } else {
-            $response['message'] = 'Project not found';
-            
-            if ($isAjax) {
-                header('Content-Type: application/json');
-                echo json_encode($response);
-                exit;
-            }
-            
             $message = 'Project not found.';
             $messageType = 'error';
-        }
-    }
-    
-    // Handle project creation
-    if (isset($_POST['create_project'])) {
-        $title = sanitizeInput($_POST['title'] ?? '');
-        $description = sanitizeInput($_POST['description'] ?? '');
-        $status = $_POST['status'] ?? 'pending';
-        $priority = $_POST['priority'] ?? 'medium';
-        $deadline = $_POST['deadline'] ?? null;
-        
-        if (empty($title) || empty($description)) {
-            $response['message'] = 'Please fill in all required fields';
-            
-            if ($isAjax) {
-                header('Content-Type: application/json');
-                echo json_encode($response);
-                exit;
-            }
-            
-            $message = 'Please fill in all required fields';
-            $messageType = 'error';
-        } else {
-            $query = "INSERT INTO projects (user_id, title, description, status, priority, deadline) VALUES (?, ?, ?, ?, ?, ?)";
-            $stmt = $db->prepare($query);
-            
-            if ($stmt->execute([$user['id'], $title, $description, $status, $priority, $deadline ?: null])) {
-                $response['success'] = true;
-                $response['message'] = 'Project created successfully';
-                $response['redirect'] = '?page=projects';
-                
-                if ($isAjax) {
-                    header('Content-Type: application/json');
-                    echo json_encode($response);
-                    exit;
-                }
-                
-                $message = 'Project created successfully!';
-                $messageType = 'success';
-                $_POST = []; // Clear form data
-            } else {
-                $response['message'] = 'Failed to create project';
-                
-                if ($isAjax) {
-                    header('Content-Type: application/json');
-                    echo json_encode($response);
-                    exit;
-                }
-                
-                $message = 'Failed to create project. Please try again.';
-                $messageType = 'error';
-            }
         }
     }
     
@@ -180,25 +102,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $emailNotifications = isset($_POST['email_notifications']) ? 1 : 0;
         
         if (empty($name) || empty($email)) {
-            $response['message'] = 'Name and email are required';
-            
-            if ($isAjax) {
-                header('Content-Type: application/json');
-                echo json_encode($response);
-                exit;
-            }
-            
             $message = 'Name and email are required';
             $messageType = 'error';
         } elseif (!validateEmail($email)) {
-            $response['message'] = 'Please enter a valid email address';
-            
-            if ($isAjax) {
-                header('Content-Type: application/json');
-                echo json_encode($response);
-                exit;
-            }
-            
             $message = 'Please enter a valid email address';
             $messageType = 'error';
         } else {
@@ -208,39 +114,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$email, $user['id']]);
             
             if ($stmt->fetch()) {
-                $response['message'] = 'Email address is already taken';
-                
-                if ($isAjax) {
-                    header('Content-Type: application/json');
-                    echo json_encode($response);
-                    exit;
-                }
-                
                 $message = 'Email address is already taken';
                 $messageType = 'error';
             } else {
                 // If password change is requested
                 if (!empty($currentPassword) || !empty($newPassword)) {
                     if (empty($currentPassword) || empty($newPassword)) {
-                        $response['message'] = 'Both current and new password are required to change password';
-                        
-                        if ($isAjax) {
-                            header('Content-Type: application/json');
-                            echo json_encode($response);
-                            exit;
-                        }
-                        
                         $message = 'Both current and new password are required to change password';
                         $messageType = 'error';
                     } elseif (strlen($newPassword) < 6) {
-                        $response['message'] = 'New password must be at least 6 characters long';
-                        
-                        if ($isAjax) {
-                            header('Content-Type: application/json');
-                            echo json_encode($response);
-                            exit;
-                        }
-                        
                         $message = 'New password must be at least 6 characters long';
                         $messageType = 'error';
                     } else {
@@ -251,14 +133,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $userData = $stmt->fetch();
                         
                         if (!verifyPassword($currentPassword, $userData['password'])) {
-                            $response['message'] = 'Current password is incorrect';
-                            
-                            if ($isAjax) {
-                                header('Content-Type: application/json');
-                                echo json_encode($response);
-                                exit;
-                            }
-                            
                             $message = 'Current password is incorrect';
                             $messageType = 'error';
                         } else {
@@ -268,15 +142,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $stmt = $db->prepare($query);
                             
                             if ($stmt->execute([$name, $email, $hashedPassword, $theme, $emailNotifications, $user['id']])) {
-                                $response['success'] = true;
-                                $response['message'] = 'Settings updated successfully!';
-                                
-                                if ($isAjax) {
-                                    header('Content-Type: application/json');
-                                    echo json_encode($response);
-                                    exit;
-                                }
-                                
                                 $message = 'Settings updated successfully!';
                                 $messageType = 'success';
                                 // Update session
@@ -285,14 +150,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 // Refresh user data
                                 $user = getCurrentUser();
                             } else {
-                                $response['message'] = 'Failed to update settings';
-                                
-                                if ($isAjax) {
-                                    header('Content-Type: application/json');
-                                    echo json_encode($response);
-                                    exit;
-                                }
-                                
                                 $message = 'Failed to update settings';
                                 $messageType = 'error';
                             }
@@ -304,15 +161,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stmt = $db->prepare($query);
                     
                     if ($stmt->execute([$name, $email, $theme, $emailNotifications, $user['id']])) {
-                        $response['success'] = true;
-                        $response['message'] = 'Settings updated successfully!';
-                        
-                        if ($isAjax) {
-                            header('Content-Type: application/json');
-                            echo json_encode($response);
-                            exit;
-                        }
-                        
                         $message = 'Settings updated successfully!';
                         $messageType = 'success';
                         // Update session
@@ -321,14 +169,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         // Refresh user data
                         $user = getCurrentUser();
                     } else {
-                        $response['message'] = 'Failed to update settings';
-                        
-                        if ($isAjax) {
-                            header('Content-Type: application/json');
-                            echo json_encode($response);
-                            exit;
-                        }
-                        
                         $message = 'Failed to update settings';
                         $messageType = 'error';
                     }
@@ -336,6 +176,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     }
+}
+
+// Handle success messages from redirects
+if (isset($_GET['success'])) {
+    $message = 'Operation completed successfully!';
+    $messageType = 'success';
 }
 
 // Get dashboard statistics
@@ -581,7 +427,6 @@ if (!in_array($page, $validPages)) {
         <main class="main-content">
             <div class="header">
                 <div>
-                    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
                     <h1 id="pageTitle">
                         <?php 
                         switch($page) {
@@ -630,27 +475,5 @@ if (!in_array($page, $validPages)) {
             </div>
         </main>
     </div>
-
-    <!-- Include the JavaScript file -->
-    <script src="../js/app.js"></script>
-    <script>
-        // Toggle sidebar for mobile
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('active');
-        }
-        
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', function(e) {
-            const sidebar = document.getElementById('sidebar');
-            const menuBtn = document.querySelector('.mobile-menu-btn');
-            
-            if (window.innerWidth <= 768 && 
-                !sidebar.contains(e.target) && 
-                !menuBtn.contains(e.target)) {
-                sidebar.classList.remove('active');
-            }
-        });
-    </script>
 </body>
 </html>
